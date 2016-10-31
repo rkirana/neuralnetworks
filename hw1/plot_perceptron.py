@@ -15,8 +15,8 @@ def  plot_perceptron(neg_examples, pos_examples, mistakes0, mistakes1, num_err_h
 #   w - A 3-dimensional vector corresponding to the current weights of the perceptron. The last element is the bias.
 #   w_dist_history - A vector containing the L2-distance to a generously feasible weight vector for each iteration of learning so far.
 #       Empty if one has not been provided.
-	num_neg_examples = neg_examples_nobias.shape [0]
-	num_pos_examples = pos_examples_nobias.shape [0]
+	num_neg_examples = neg_examples.shape [0]
+	num_pos_examples = pos_examples.shape [0]
 	neg_correct_ind = [x for x in xrange (num_neg_examples) if x not in mistakes0]
 	pos_correct_ind = [x for x in xrange (num_pos_examples) if x not in mistakes1]
 	neg_incorrect_ind = [x for x in xrange (num_neg_examples) if x in mistakes0]

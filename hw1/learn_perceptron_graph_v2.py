@@ -14,40 +14,42 @@ def learn_perceptron (neg_examples_nobias, pos_examples_nobias, w_init, w_gen_fe
 	num_pos_examples = pos_examples_nobias.shape [0]
 	num_err_history = None
 	w_dist_history = None
-
 	neg_examples = np.concatenate ((neg_examples_nobias, np.ones ((num_neg_examples, 1))), axis=1)
 	pos_examples = np.concatenate ((pos_examples_nobias, np.ones ((num_pos_examples, 1))), axis=1)
+	#if w_init is None:
+	#	w_init = np.random.standard_normal ((1, 3))
+	if w_init.shape[0] == 0:
+		w_init = np.random.standard_normal ((3,1))
 
+	if w_gen_feas.shape[0] == 0:
+		w_gen_feas = None
 
-	if w_init is None:
-		w_init = np.random.standard_normal ((1, 3))
-
-	w = w_init
 	iter = -1
 	num_errs = 100
 	num_err_history = []
 	w_dist_history = []
-	w_gen_feas= w_init
+	w = w_init
+	print w.shape
 	while num_errs > 0:
 		iter = iter + 1
 		# Find the data points that the perceptron has incorrectly classified and record the number of errors it makes
 		[mistakes0, mistakes1] = eval_perceptron(neg_examples,pos_examples,w)
 		num_errs = len (mistakes0) + len (mistakes1)
-	
 		num_err_history.append (num_errs)
 		print ('Number of errors in iteration %d:%d',iter,num_errs)
 		print ('weights:%s\n', w );
-		
-		#If a generously feasible weight vector exists, record the distance to it from the initial weight vector
-   	#Update the weights of the perceptron.
+		#If a generously feasible weight vector exists, record the distance to it from the initial weight vector  	#Update the weights of the perceptron.
 		w = update_weights(neg_examples,pos_examples,w)
-		if w is not None:
+		if w_gen_feas is not None:
 			w_dist_history.append ( np.linalg.norm (w - w_gen_feas))
-		plot_perceptron(neg_examples, pos_examples, mistakes0, mistakes1, num_err_history, w, w_dist_history);
+		#plot_perceptron(neg_examples, pos_examples, mistakes0, mistakes1, num_err_history, w, w_dist_history)
 		#key = input('<Press enter to continue, q to quit.>', 's');
 		#if (key == 'q')
 	   #	 return;
 		#end
+	return
+
+
 
 
 # Updates the weights of the perceptron for incorrectly classified points using the perceptron update algorithm. This function makes one sweep over the dataset.
@@ -64,23 +66,23 @@ def learn_perceptron (neg_examples_nobias, pos_examples_nobias, w_init, w_gen_fe
 
 def update_weights (neg_examples, pos_examples, w_current, learning_rate = 1):
 	w = w_current;
-	num_neg_examples = neg_examples_nobias.shape [0]
-	num_pos_examples = pos_examples_nobias.shape [0]
+	num_neg_examples = neg_examples.shape [0]
+	num_pos_examples = pos_examples.shape [0]
 
 	for i in xrange (num_neg_examples):
-		 x = neg_examples [i,:].reshape (1, neg_examples_nobias.shape[1]+1)
-		 activation = np.dot (x, w.T)
+		 x = neg_examples [i,:].reshape (1, 3)
+		 activation = np.dot (x, w)
 		 if (activation >= 0):
 		 	deltaw = learning_rate * x * -1
+			deltaw = deltaw.reshape (w.shape[0], w.shape[1])
 			w = w + deltaw
-		
 	for i in xrange (num_pos_examples):
-		 x = pos_examples [i,:].reshape (1, pos_examples_nobias.shape[1]+1)
-		 activation = np.dot (x, w.T)
-		 if (activation >= 0):
-		 	deltaw = learning_rate * x * -1
+		 x = pos_examples [i,:].reshape (1, 3)
+		 activation = np.dot (x, w)
+		 if (activation < 0):
+		 	deltaw = learning_rate * x * 1
+			deltaw = deltaw.reshape (w.shape[0], w.shape[1])
 			w = w + deltaw
-
 	return w
 
 def eval_perceptron (neg_examples, pos_examples, w):
@@ -94,19 +96,20 @@ def eval_perceptron (neg_examples, pos_examples, w):
 # Returns:
 #   mistakes0 - A vector containing the indices of the negative examples that have been incorrectly classified as positive.
 #  mistakes0 - A vector containing the indices of the positive examples that have been incorrectly classified as negative.
-	num_neg_examples = neg_examples_nobias.shape [0]
-	num_pos_examples = pos_examples_nobias.shape [0]
+	num_neg_examples = neg_examples.shape [0]
+	num_pos_examples = pos_examples.shape [0]
 	mistakes0 = []
 	mistakes1 = []
 	for i in xrange (num_neg_examples):
-		 x = neg_examples [i,:].reshape (1, neg_examples_nobias.shape[1]+1)
-		 activation = np.dot (x, w.T)
+		 x = neg_examples [i,:].reshape (1, 3)
+		 print w.shape
+		 activation = np.dot (x, w)
 		 if (activation >= 0):
 		     mistakes0.append (i)
 	for i in xrange (num_pos_examples):
-		 x = pos_examples [i,:].reshape (1, pos_examples_nobias.shape[1]+1)
-		 activation = np.dot (x, w.T)
-		 if (activation >= 0):
+		 x = pos_examples [i,:].reshape (1, 3)
+		 activation = np.dot (x, w)
+		 if (activation < 0):
 		     mistakes1.append (i)
 	return ([mistakes0, mistakes1])
 
