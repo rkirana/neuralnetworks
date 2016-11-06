@@ -4,15 +4,7 @@ function [model] = train(epochs)
 %   epochs: Number of epochs to run.
 % Output:
 %   model: A struct containing the learned weights and biases and vocabulary.
-
-if size(ver('Octave'),1)
-  OctaveMode = 1;
-  warning('error', 'Octave:broadcast');
-  start_time = time;
-else
-  OctaveMode = 0;
-  start_time = clock;
-end
+rand ("seed", 11)
 
 % SET HYPERPARAMETERS HERE.
 batchsize = 100;  % Mini-batch size.
@@ -57,6 +49,7 @@ for epoch = 1:epochs
   trainset_CE = 0;
   % LOOP OVER MINI-BATCHES.
   for m = 1:numbatches
+  for m = 1:5
     input_batch = train_input(:, :, m);
     target_batch = train_target(:, :, m);
 
@@ -86,9 +79,7 @@ for epoch = 1:epochs
       count = 0;
       this_chunk_CE = 0;
     end
-    if OctaveMode
-      fflush(1);
-    end
+
 
     % BACK PROPAGATE.
     %% OUTPUT LAYER.
@@ -99,25 +90,25 @@ for epoch = 1:epochs
 
     %% HIDDEN LAYER.
     % FILL IN CODE. Replace the line below by one of the options.
-    embed_to_hid_weights_gradient = zeros(numhid1 * numwords, numhid2);
+    #embed_to_hid_weights_gradient = zeros(numhid1 * numwords, numhid2);
     % Options:
     % (a) embed_to_hid_weights_gradient = back_propagated_deriv_1' * embedding_layer_state;
-    % (b) embed_to_hid_weights_gradient = embedding_layer_state * back_propagated_deriv_1';
+    embed_to_hid_weights_gradient = embedding_layer_state * back_propagated_deriv_1';
     % (c) embed_to_hid_weights_gradient = back_propagated_deriv_1;
     % (d) embed_to_hid_weights_gradient = embedding_layer_state;
 
     % FILL IN CODE. Replace the line below by one of the options.
-    hid_bias_gradient = zeros(numhid2, 1);
+    #hid_bias_gradient = zeros(numhid2, 1);
     % Options
-    % (a) hid_bias_gradient = sum(back_propagated_deriv_1, 2);
+    hid_bias_gradient = sum(back_propagated_deriv_1, 2);
     % (b) hid_bias_gradient = sum(back_propagated_deriv_1, 1);
     % (c) hid_bias_gradient = back_propagated_deriv_1;
     % (d) hid_bias_gradient = back_propagated_deriv_1';
 
     % FILL IN CODE. Replace the line below by one of the options.
-    back_propagated_deriv_2 = zeros(numhid2, batchsize);
+    #back_propagated_deriv_2 = zeros(numhid2, batchsize);
     % Options
-    % (a) back_propagated_deriv_2 = embed_to_hid_weights * back_propagated_deriv_1;
+    back_propagated_deriv_2 = embed_to_hid_weights * back_propagated_deriv_1;
     % (b) back_propagated_deriv_2 = back_propagated_deriv_1 * embed_to_hid_weights;
     % (c) back_propagated_deriv_2 = back_propagated_deriv_1' * embed_to_hid_weights;
     % (d) back_propagated_deriv_2 = back_propagated_deriv_1 * embed_to_hid_weights';
@@ -160,9 +151,6 @@ for epoch = 1:epochs
     % VALIDATE.
     if mod(m, show_validation_CE_after) == 0
       fprintf(1, '\rRunning validation ...');
-      if OctaveMode
-        fflush(1);
-      end
       [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
         fprop(valid_input, word_embedding_weights, embed_to_hid_weights,...
               hid_to_output_weights, hid_bias, output_bias);
@@ -179,9 +167,7 @@ for epoch = 1:epochs
   fprintf(1, '\rAverage Training CE %.3f\n', trainset_CE);
 end
 fprintf(1, 'Finished Training.\n');
-if OctaveMode
-  fflush(1);
-end
+
 fprintf(1, 'Final Training CE %.3f\n', trainset_CE);
 
 % EVALUATE ON VALIDATION SET.
@@ -235,3 +221,7 @@ else
 end
 fprintf(1, 'Training took %.2f seconds\n', diff);
 end
+
+
+
+
